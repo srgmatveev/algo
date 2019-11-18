@@ -19,13 +19,14 @@ namespace sergio {
         Node *prev;
     };
 
-    template<typename T>
+    template<typename T, typename U>
     class LinkedList {
     private:
         Node<T> *head;
         std::mutex mutex;
+        U priority;
     public:
-        LinkedList() : head(nullptr) {};
+        LinkedList(U priority) : head(nullptr), priority(priority) {};
 
         ~LinkedList() {
             std::lock_guard<std::mutex> lock(mutex);
@@ -115,39 +116,51 @@ namespace sergio {
             head = new_head;
         }
 
+        bool not_empty() const  {
+            return head ? true : false;
+        }
+
         T get_front_value() {
             if (!head) throw std::out_of_range("null size of linked list");
             return head->data;
         }
 
-        friend std::ostream &operator<<(std::ostream &out, const LinkedList<T> &linkedList) {
+        friend std::ostream &operator<<(std::ostream &out, const LinkedList<T, U> &linkedList) {
+            out << "priority = " << linkedList.priority;
+            if(linkedList.not_empty()) out << ",";
             if (linkedList.head) {
+                out << " list = {";
                 out << linkedList.head->data;
                 if (linkedList.head->next)
-                    out << " ";
+                    out << ", ";
 
                 Node<T> *last = linkedList.head->next;
                 while (last) {
                     out << last->data;
                     last = last->next;
-                    if (last) out << " ";
+                    if (last) out << ", ";
                 }
+                out << "}";
             }
             return out;
         }
 
-        friend std::ostream &operator<<(std::ostream &out, const LinkedList<T> *linkedList) {
+        friend std::ostream &operator<<(std::ostream &out, const LinkedList<T, U> *linkedList) {
+            out << "priority = " << linkedList->priority;
+            if(linkedList->not_empty()) out << ",";
             if (linkedList->head) {
+                out << " list = {";
                 out << linkedList->head->data;
                 if (linkedList->head->next)
-                    out << " ";
+                    out << ", ";
 
                 Node<T> *last = linkedList->head->next;
                 while (last) {
                     out << last->data;
                     last = last->next;
-                    if (last) out << " ";
+                    if (last) out << ", ";
                 }
+                out << "}";
             }
             return out;
         }
