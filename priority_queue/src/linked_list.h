@@ -22,7 +22,7 @@ namespace sergio {
     template<typename T, typename U>
     class LinkedList {
     private:
-        Node<T> *head;
+        Node<T> *head ;
         U priority;
     public:
         LinkedList() : head(nullptr), priority(0) {};
@@ -30,6 +30,7 @@ namespace sergio {
         LinkedList(U priority) : head(nullptr), priority(priority) {};
 
         ~LinkedList() {
+            return;
             if (head != nullptr) {
                 Node<T> *tmp = head->next;
                 if (!tmp) free(head);
@@ -55,7 +56,7 @@ namespace sergio {
             if ((*head_ref) != nullptr)
                 (*head_ref)->prev = new_node;
             (*head_ref) = new_node;
-            if (new_node->next == new_node->prev && new_node->next == new_node) {
+            if (new_node && new_node->next == new_node->prev && new_node->next == new_node) {
                 new_node->next = nullptr;
                 new_node->prev = nullptr;
             }
@@ -117,6 +118,23 @@ namespace sergio {
             if (head)
                 free(head);
             head = new_head;
+        }
+
+        void clear() {
+            if (!head) return;
+            Node<T> *cur_node = head;
+            Node<T> *tmp_node = nullptr;
+            while (cur_node) {
+                if (cur_node->next != nullptr) {
+                    tmp_node = cur_node;
+                    cur_node = cur_node->next;
+                    if(tmp_node)
+                        free(tmp_node);
+                } else {
+                    free(cur_node);
+                    break;
+                }
+            }
         }
 
         bool not_empty() const {
@@ -181,13 +199,14 @@ namespace sergio {
         }
 
 
-        LinkedList<T, U> &operator=(const LinkedList &right) {
-            //проверка на самоприсваивание
+        LinkedList<T, U> &operator=(LinkedList &right) {
+
             if (this == &right) {
                 return *this;
             }
             head = right.head;
             priority = right.priority;
+            right.head = nullptr;
             return *this;
         }
 

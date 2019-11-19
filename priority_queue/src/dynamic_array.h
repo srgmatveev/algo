@@ -25,11 +25,11 @@ namespace sergio {
                 }
                 arr[n - 1].set_priority(u);
                 arr[n - 1].push_front(t);
-                //this->MergeSort();
+                this->merge_sort();
             }
         }
 
-        void MergeSort() {
+        void merge_sort() {
             X BlockSizeIterator;
             X BlockIterator;
             X LeftBlockIterator;
@@ -108,5 +108,13 @@ namespace sergio {
             return out;
         }
 
+        ~DArray() {
+            for(auto i=0;i<n;++i)
+                arr[i].clear();
+            if(arr)
+                free(arr);
+
+
+        }
     };
 }
