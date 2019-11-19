@@ -15,21 +15,21 @@ namespace sergio {
     template<typename T>
     struct Node {
         T data;
-        Node *next;
-        Node *prev;
+        Node *next{nullptr};
+        Node *prev{nullptr};
     };
 
     template<typename T, typename U>
     class LinkedList {
     private:
         Node<T> *head;
-        std::mutex mutex;
         U priority;
     public:
+        LinkedList() : head(nullptr), priority(0) {};
+
         LinkedList(U priority) : head(nullptr), priority(priority) {};
 
         ~LinkedList() {
-            std::lock_guard<std::mutex> lock(mutex);
             if (head != nullptr) {
                 Node<T> *tmp = head->next;
                 if (!tmp) free(head);
@@ -47,19 +47,21 @@ namespace sergio {
         }
 
         void push_front(const T &new_data) {
-            std::lock_guard<std::mutex> lock(mutex);
-            struct Node<T> **head_ref = &head;
             struct Node<T> *new_node;
             new_node = create_Node(new_data);
+            struct Node<T> **head_ref = &head;
             new_node->next = (*head_ref);
             new_node->prev = nullptr;
             if ((*head_ref) != nullptr)
                 (*head_ref)->prev = new_node;
             (*head_ref) = new_node;
+            if (new_node->next == new_node->prev && new_node->next == new_node) {
+                new_node->next = nullptr;
+                new_node->prev = nullptr;
+            }
         }
 
         void insertAfter(Node<T> *prev_node, const T &new_data) {
-            std::lock_guard<std::mutex> lock(mutex);
             if (prev_node == nullptr) {
                 return;
             }
@@ -73,12 +75,15 @@ namespace sergio {
         }
 
         void push_back(const T &new_data) {
-            std::lock_guard<std::mutex> lock(mutex);
             struct Node<T> **head_ref = &head;
             struct Node<T> *new_node;
             new_node = create_Node(new_data);
             if (*head_ref == nullptr) {
                 *head_ref = new_node;
+                if (new_node->next == new_node->prev && new_node->next == new_node) {
+                    new_node->next = nullptr;
+                    new_node->prev = nullptr;
+                }
                 return;
             }
             Node<T> *last = *head_ref;
@@ -90,8 +95,7 @@ namespace sergio {
             return;
         }
 
-        std::size_t size() {
-            std::lock_guard<std::mutex> lock(mutex);
+        std::size_t size() const {
             std::size_t count{0};
             Node<T> *tmp = head;
             while (tmp) {
@@ -102,7 +106,6 @@ namespace sergio {
         }
 
         void pop_front() {
-            std::lock_guard<std::mutex> lock(mutex);
             if (!head) return;
             if (!head->next) {
                 free(head);
@@ -116,18 +119,30 @@ namespace sergio {
             head = new_head;
         }
 
-        bool not_empty() const  {
+        bool not_empty() const {
             return head ? true : false;
         }
 
-        T get_front_value() {
-            if (!head) throw std::out_of_range("null size of linked list");
-            return head->data;
+        bool empty() const {
+            return !this->non_empty();
+        }
+
+        T *top() {
+            if (!head) return nullptr;
+            return &head->data;
+        }
+
+        U &get_priority() {
+            return priority;
+        }
+
+        void set_priority(U priority) {
+            this->priority = priority;
         }
 
         friend std::ostream &operator<<(std::ostream &out, const LinkedList<T, U> &linkedList) {
             out << "priority = " << linkedList.priority;
-            if(linkedList.not_empty()) out << ",";
+            if (linkedList.not_empty()) out << ",";
             if (linkedList.head) {
                 out << " list = {";
                 out << linkedList.head->data;
@@ -147,7 +162,7 @@ namespace sergio {
 
         friend std::ostream &operator<<(std::ostream &out, const LinkedList<T, U> *linkedList) {
             out << "priority = " << linkedList->priority;
-            if(linkedList->not_empty()) out << ",";
+            if (linkedList->not_empty()) out << ",";
             if (linkedList->head) {
                 out << " list = {";
                 out << linkedList->head->data;
@@ -164,6 +179,18 @@ namespace sergio {
             }
             return out;
         }
+
+
+        LinkedList<T, U> &operator=(const LinkedList &right) {
+            //проверка на самоприсваивание
+            if (this == &right) {
+                return *this;
+            }
+            head = right.head;
+            priority = right.priority;
+            return *this;
+        }
+
 
     private:
         Node<T> *create_Node(const T &new_data) {

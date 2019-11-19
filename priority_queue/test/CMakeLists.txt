@@ -15,6 +15,6 @@ download_project(
 )
 
 add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
-add_executable(runUnitTests unit_tests.cpp test_pqueue.cpp test_linkedlist.cpp)
+add_executable(runUnitTests unit_tests.cpp test_pqueue.cpp test_linkedlist.cpp test_dynamic_array.cpp)
 target_link_libraries(runUnitTests gtest gmock ${CMAKE_THREAD_LIBS_INIT})
 add_test(runUnitTests runUnitTests)
