@@ -6,11 +6,11 @@
 
 class DArray_Test : public ::testing::Test {
 protected:
-    sergio::DArray<int, int, size_t> *dArray;
+    sergio::DArray<int, int, size_t, long> *dArray;
 protected:
 
     virtual void SetUp() {
-        dArray = new sergio::DArray<int, int, size_t>();
+        dArray = new sergio::DArray<int, int, size_t, long>();
     }
 
     virtual void TearDown() {
@@ -74,4 +74,30 @@ TEST_F(DArray_Test, add_3_item) {
     std::cout << dArray;
     output = testing::internal::GetCapturedStdout();
     ASSERT_EQ(output, test_string);
+}
+
+TEST_F(DArray_Test, del_items) {
+    dArray->append(14, 6);
+    ASSERT_EQ(dArray->size(),1);
+    int* val = dArray->top(6);
+    ASSERT_EQ(*val,14);
+    dArray->pop(6);
+    ASSERT_EQ(dArray->size(),0);
+    dArray->append(14, 6);
+    ASSERT_EQ(dArray->size(),1);
+    dArray->append(11, 5);
+    ASSERT_EQ(dArray->size(),2);
+    dArray->append(128, 5);
+    val = dArray->top(5);
+    ASSERT_EQ(*val,128);
+    ASSERT_EQ(dArray->size(),2);
+    dArray->pop(6);
+    ASSERT_EQ(dArray->size(),1);
+    dArray->pop(5);
+    ASSERT_EQ(dArray->size(),1);
+    dArray->pop(5);
+    ASSERT_EQ(dArray->size(),0);
+    dArray->pop(5);
+    ASSERT_EQ(dArray->size(),0);
+
 }

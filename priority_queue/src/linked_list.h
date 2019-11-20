@@ -25,12 +25,13 @@ namespace sergio {
         Node<T> *head ;
         U priority;
     public:
+        bool stand_alone = true;
         LinkedList() : head(nullptr), priority(0) {};
 
         LinkedList(U priority) : head(nullptr), priority(priority) {};
 
         ~LinkedList() {
-            return;
+            if (!stand_alone) return;
             if (head != nullptr) {
                 Node<T> *tmp = head->next;
                 if (!tmp) free(head);
@@ -142,7 +143,7 @@ namespace sergio {
         }
 
         bool empty() const {
-            return !this->non_empty();
+            return !this->not_empty();
         }
 
         T *top() {
@@ -167,7 +168,8 @@ namespace sergio {
                 if (linkedList.head->next)
                     out << ", ";
 
-                Node<T> *last = linkedList.head->next;
+                Node<T> *last = nullptr;
+                last = linkedList.head->next;
                 while (last) {
                     out << last->data;
                     last = last->next;
@@ -204,9 +206,12 @@ namespace sergio {
             if (this == &right) {
                 return *this;
             }
+            Node<T> *tmp = this->head;
+            U tmp_priority = this->priority;
             head = right.head;
             priority = right.priority;
-            right.head = nullptr;
+            right.head = tmp;
+            right.priority = tmp_priority;
             return *this;
         }
 
