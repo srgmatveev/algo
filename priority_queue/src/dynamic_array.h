@@ -19,10 +19,12 @@ namespace sergio {
             else {
                 ++n;
                 arr = (LinkedList<T, U> *) realloc(arr, sizeof(LinkedList<T, U>) * (n));
+                memset(arr + n - 1, '\0', sizeof(LinkedList<T, U>));
                 if (!arr) {
                     --n;
                     throw std::bad_alloc();
                 }
+                arr[n - 1].stand_alone = false;
                 arr[n - 1].set_priority(u);
                 arr[n - 1].push_front(t);
                 this->merge_sort();
@@ -91,7 +93,7 @@ namespace sergio {
                     searcher = mid;
                     break;
                 }
-                if (u < arr[mid].get_priority()) {
+                if (u > arr[mid].get_priority()) {
                     if (mid == 0) break;
                     right = mid - 1;
                 } else
@@ -103,15 +105,15 @@ namespace sergio {
 
         friend std::ostream &operator<<(std::ostream &out, const DArray<T, U, X> *dArray) {
             for (auto i = 0; i < dArray->n; ++i) {
-                out << dArray->arr[i]<<std::endl;
+                out << dArray->arr[i] << std::endl;
             }
             return out;
         }
 
         ~DArray() {
-            for(auto i=0;i<n;++i)
+            for (auto i = 0; i < n; ++i)
                 arr[i].clear();
-            if(arr)
+            if (arr)
                 free(arr);
 
 
