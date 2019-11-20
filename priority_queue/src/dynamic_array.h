@@ -163,7 +163,7 @@ namespace sergio {
         T *top(const U &u)  {
             LinkedList<T, U> *node = this->find(u);
             if (node)
-                node->top();
+                return node->top();
             else
                 return nullptr;
         }

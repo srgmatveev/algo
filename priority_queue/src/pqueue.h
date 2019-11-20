@@ -19,13 +19,13 @@ namespace sergio {
         void enqueue(const U &priority, const T &item) { dArray->append(item, priority); } // put element in queue
         T *dequeue() const {
             T *t = dArray->top();
-            if (!t) return nullptr;
-            else {
+            if (t) {
                 T *ret_t = new T();
                 *ret_t = *t;
                 dArray->pop();
                 return ret_t;
             }
+            return nullptr;
         } // get element from queue
 
 
