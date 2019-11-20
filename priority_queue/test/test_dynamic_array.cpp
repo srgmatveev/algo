@@ -101,3 +101,22 @@ TEST_F(DArray_Test, del_items) {
     ASSERT_EQ(dArray->size(),0);
 
 }
+
+TEST_F(DArray_Test, del_items_2) {
+    dArray->append(14, 6);
+    dArray->append(11, 5);
+    dArray->append(128, 5);
+    dArray->append(17, 8);
+    dArray->append(18, 8);
+    dArray->append(17, 9);
+    dArray->append(18, 9);
+    ASSERT_EQ(dArray->size(),4);
+    dArray->pop(5);
+    dArray->pop(5);
+    dArray->pop(9);
+    dArray->pop(9);
+    dArray->pop(6);
+    dArray->pop(8);
+    dArray->pop(8);
+    ASSERT_EQ(dArray->size(),0);
+}

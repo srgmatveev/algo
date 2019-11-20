@@ -107,6 +107,24 @@ namespace sergio {
             }
             return POS_NPOS;
         }
+        void delete_node(LinkedList<T, U> *node) {
+            if (!node) return;
+            Y pos = find_pos(node);
+            if (pos != POS_NPOS) {
+                if(pos == n-1){
+                    arr[n-1].clear();
+                    --n;
+                    arr = (LinkedList<T, U> *) realloc(arr, sizeof(LinkedList<T, U>) * (n));
+                } else {
+                    for(auto i = pos; i < n-1; ++i){
+                        arr[i] = arr[i+1];
+                    }
+                    arr[n-1].clear();
+                    --n;
+                    arr = (LinkedList<T, U> *) realloc(arr, sizeof(LinkedList<T, U>) * (n));
+                }
+            }
+        }
 
     public:
         void append(T t, const U &u) {
@@ -133,6 +151,14 @@ namespace sergio {
             }
             return out;
         }
+        T* top(){
+            if(!arr) return nullptr;
+            return arr->top();
+        }
+
+        void pop(){
+            if(arr) pop(arr->get_priority());
+        }
 
         T *top(const U &u)  {
             LinkedList<T, U> *node = this->find(u);
@@ -142,24 +168,6 @@ namespace sergio {
                 return nullptr;
         }
 
-        void delete_node(LinkedList<T, U> *node) {
-            if (!node) return;
-            Y pos = find_pos(node);
-            if (pos != POS_NPOS) {
-                if(pos == n-1){
-                    arr[n-1].clear();
-                    --n;
-                    arr = (LinkedList<T, U> *) realloc(arr, sizeof(LinkedList<T, U>) * (n));
-                } else {
-                    for(auto i = pos; i < n-1; ++i){
-                        arr[i] = arr[i+1];
-                    }
-                    arr[n-1].clear();
-                    --n;
-                    arr = (LinkedList<T, U> *) realloc(arr, sizeof(LinkedList<T, U>) * (n));
-                }
-            }
-        }
 
         void pop(const U &u) {
             LinkedList<T, U> *node = this->find(u);
