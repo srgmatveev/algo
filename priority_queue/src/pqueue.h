@@ -10,7 +10,7 @@
 namespace sergio {
 
 
-    template<typename T, typename U, typename X, typename Y>
+    template<typename T, typename U, typename X, typename Y,  typename  =  std::enable_if_t<std::is_signed<Y>::value>>
     class p_queue {
         DArray<T, U, X, Y> *dArray;
     public:
