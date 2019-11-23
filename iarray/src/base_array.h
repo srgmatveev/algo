@@ -76,8 +76,8 @@ public:
         return (node<T> *) *((size_t *) arr + tmp_index);
     }
 
-    BaseArray &operator=(node<T> **r_node) {
-        size_t *tmp = (size_t *) *r_node;
+    BaseArray &operator=(node<T> *r_node) {
+        size_t *tmp = (size_t *) r_node;
         node<T> *t = (node<T> *) *((size_t *) arr + tmp_index);
         node<T> *t1 = nullptr;
         bool del = true;
@@ -97,7 +97,7 @@ public:
             }
 
         }
-        ((size_t *) arr)[tmp_index] = (size_t) std::addressof(**r_node);
+        ((size_t *) arr)[tmp_index] = (size_t) std::addressof(*r_node);
         return *this;
     }
 
@@ -113,11 +113,9 @@ public:
             n = full_size - 1;
             return false;
         }
-        ((size_t *) arr)[tmp_index] = (size_t) std::addressof(*t);
+        ((size_t *) arr)[n] = (size_t) std::addressof(*t);
         n++;
         tmp_index = n - 1;
-        std::cout << n << " " << tmp_index << " " << std::endl;
-        std::cout << t << " address = " << std::hex<<((size_t*)arr)[0] << std::endl;
         return true;
     }
 
