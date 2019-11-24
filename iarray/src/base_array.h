@@ -61,10 +61,6 @@ public:
             if (((size_t *) arr)[i]) {
                 node<T> *t = (node<T> *) *((size_t *) arr + i);
                 if (t) {
-                    for (auto j = i + 1; j < full_size; ++j) {
-                        node<T> *t1 = (node<T> *) *((size_t *) arr + j);
-                        if (t1 == t) { *((size_t *) arr + j) = 0; }
-                    }
                     delete (t);
                 }
             }
@@ -77,25 +73,10 @@ public:
     }
 
     BaseArray &operator=(node<T> *r_node) {
-        size_t *tmp = (size_t *) r_node;
         node<T> *t = (node<T> *) *((size_t *) arr + tmp_index);
-        node<T> *t1 = nullptr;
-        bool del = true;
         if (t) {
-            for (auto i = 0; i < full_size; ++i) {
-                if (i != tmp_index) {
-                    t1 = (node<T> *) *((size_t *) arr + i);
-                    if (t1 == t) {
-                        del = false;
-                        break;
-                    }
-                }
-            }
-            if (del) {
-                delete (t);
-                *((size_t *) arr + tmp_index) = 0;
-            }
-
+            delete (t);
+            *((size_t *) arr + tmp_index) = 0;
         }
         ((size_t *) arr)[tmp_index] = (size_t) std::addressof(*r_node);
         return *this;
@@ -109,7 +90,7 @@ public:
     }
 
     bool push_back(node<T> *t) {
-        if ((n + 1) >= full_size) {
+        if ((n + 1) > full_size) {
             n = full_size - 1;
             return false;
         }
@@ -119,6 +100,50 @@ public:
         return true;
     }
 
+    void pop_back() {
+        if (!n) return;
+        node<T> *t = (node<T> *) *((size_t *) arr + n - 1);
+        if (t) {
+            delete (t);
+            *((size_t *) arr + n - 1) = 0;
+        }
+        --n;
+        tmp_index = n - 1;
+    }
+
+    node<T> *insert_before(node<T> *t, const X &index) {
+        if (index > full_size - 1) std::range_error("out of index");
+        if (index == n) {
+            this->push_back(t);
+            return nullptr;
+        }
+        if (index < n) {
+            if ((index + 1) >= full_size) {
+                node<T> *tt = (node<T> *) *((size_t *) arr + n - 1);
+                *((size_t *) arr + tmp_index) = 0;
+                ((size_t *) arr)[index] = (size_t) std::addressof(*t);
+                return tt;
+            } else {
+                for (auto i = n; i > index; --i)
+                    *((size_t *) arr + i) = *((size_t *) arr + i - 1);
+                n++;
+                tmp_index = n - 1;
+                ((size_t *) arr)[index] = (size_t) std::addressof(*t);
+                return nullptr;
+            }
+        }
+        return nullptr;
+    }
+
+    bool empty(){
+        if(!n) return true;
+        return false;
+    }
+
+    X get_size(){
+        return n;
+    }
+    
     friend std::ostream &operator<<(std::ostream &out, const BaseArray &baseArray) {
         if (((size_t *) baseArray.arr)[baseArray.tmp_index]) {
             out << ((node<T> **) baseArray.arr)[baseArray.tmp_index]->val;
