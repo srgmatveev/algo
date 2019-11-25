@@ -143,7 +143,7 @@ public:
     X get_size(){
         return n;
     }
-    
+
     friend std::ostream &operator<<(std::ostream &out, const BaseArray &baseArray) {
         if (((size_t *) baseArray.arr)[baseArray.tmp_index]) {
             out << ((node<T> **) baseArray.arr)[baseArray.tmp_index]->val;
