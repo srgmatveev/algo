@@ -22,7 +22,7 @@ template<typename T, typename X>
 class List_Array {
 private:
     Node<T, X> *head;
-
+    const X bArray_full_size;
 
     Node<T, X> *create_Node(const BaseArray<T, X> &new_data) {
         struct Node<T, X> *new_node;
@@ -55,7 +55,7 @@ private:
     }
 
 public:
-    List_Array() : head(nullptr) {}
+    List_Array(const X& bArray_full_size = FULL_SIZE) : head(nullptr),bArray_full_size(bArray_full_size) {}
 
     ~List_Array() {
         if (head != nullptr) {
@@ -77,7 +77,7 @@ public:
     void at(const X &index, const T &data) {
         node<T> *node1 = new node<T>(data);
         if (!head) {
-            BaseArray<T, X> *baseArray = new BaseArray<T, X>(3);
+            BaseArray<T, X> *baseArray = new BaseArray<T, X>(bArray_full_size);
             baseArray->push_back(node1);
             push_front(*baseArray);
             return;
@@ -92,7 +92,7 @@ public:
             if (cur + tmp_size >= index && index - cur < tmp->data->get_full_size()) {
                 node<T> *tmp_node = tmp->data->insert_before(node1, index - cur);
                 if (tmp_node) {
-                    BaseArray<T, X> *baseArray = new BaseArray<T, X>(3);
+                    BaseArray<T, X> *baseArray = new BaseArray<T, X>(bArray_full_size);
                     baseArray->push_back(tmp_node);
                     insertAfter(tmp, *baseArray);
                 }
@@ -100,7 +100,7 @@ public:
             } else {
                 cur += tmp_size;
                 if (!tmp->next) {
-                    BaseArray<T, X> *baseArray = new BaseArray<T, X>(3);
+                    BaseArray<T, X> *baseArray = new BaseArray<T, X>(bArray_full_size);
                     if (cur + tmp_size >= index) {
                         baseArray->push_back(node1);
                         push_back(*baseArray);

@@ -10,7 +10,7 @@ protected:
     List_Array<int, size_t> *listArray;
 
     virtual void SetUp() {
-        listArray = new List_Array<int, size_t>();
+        listArray = new List_Array<int, size_t>(3);
     }
 
     virtual void TearDown() {
