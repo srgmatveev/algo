@@ -144,6 +144,9 @@ public:
         return n;
     }
 
+    X get_full_size(){
+        return this->full_size;
+    }
     friend std::ostream &operator<<(std::ostream &out, const BaseArray &baseArray) {
         if (((size_t *) baseArray.arr)[baseArray.tmp_index]) {
             out << ((node<T> **) baseArray.arr)[baseArray.tmp_index]->val;

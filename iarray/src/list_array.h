@@ -12,8 +12,9 @@ public:
     BaseArray<T, X> *data;
     Node *next;
     Node *prev;
-    ~Node(){
-        if(data) delete(data);
+
+    ~Node() {
+        if (data) delete (data);
     }
 };
 
@@ -21,7 +22,7 @@ template<typename T, typename X>
 class List_Array {
 private:
     Node<T, X> *head;
-    X full_size_base_array;
+
 
     Node<T, X> *create_Node(const BaseArray<T, X> &new_data) {
         struct Node<T, X> *new_node;
@@ -31,6 +32,26 @@ private:
         new_node->next = nullptr;
         new_node->data = const_cast<BaseArray<T, X> *>(&new_data);
         return new_node;
+    }
+
+    bool replace_at(const X &index, node<T> *tmp_node) {
+        Node<T, X> *tmp = head;
+        X cur = 0;
+        X b_size = 0;
+        while (tmp) {
+            b_size = tmp->data->get_size();
+            if (index <= cur + b_size && index >=cur ) {
+                for (auto i = 0; i < b_size; ++i)
+                    if (index == cur + i) {
+                        BaseArray<T, X> *t_base = tmp->data;
+                        (*t_base)[i] = tmp_node;
+                        return true;
+                    }
+            }
+            cur += b_size;
+            tmp = tmp->next;
+        }
+        return false;
     }
 
 public:
@@ -45,7 +66,7 @@ public:
                     delete (tmp->prev);
                 if (!tmp->next) {
                     if (tmp)
-                        delete(tmp);
+                        delete (tmp);
                     break;
                 }
                 tmp = tmp->next;
@@ -61,20 +82,23 @@ public:
             push_front(*baseArray);
             return;
         }
+        if (replace_at(index, node1))
+            return;
         Node<T, X> *tmp = head;
         X cur = 0;
         X tmp_size = 0;
         while (tmp) {
             tmp_size = tmp->data->get_size();
-            if (cur + tmp_size >= index) {
-                node<T> *tmp_node = tmp->data->insert_before(node1, index - cur -1);
+            if (cur + tmp_size >= index && index - cur < tmp->data->get_full_size()) {
+                node<T> *tmp_node = tmp->data->insert_before(node1, index - cur);
                 if (tmp_node) {
                     BaseArray<T, X> *baseArray = new BaseArray<T, X>(3);
                     baseArray->push_back(tmp_node);
                     insertAfter(tmp, *baseArray);
                 }
                 break;
-            } else {
+            }
+            else {
                 cur += tmp_size;
                 if (!tmp->next) {
                     BaseArray<T, X> *baseArray = new BaseArray<T, X>(3);
@@ -170,4 +194,20 @@ public:
         return !this->not_empty();
     }
 
+    node<T>* get(const X& index){
+        Node<T, X> *tmp = head;
+        X cur = 0;
+        X b_size = 0;
+        while (tmp) {
+            b_size = tmp->data->get_size();
+            if (index < cur + b_size && index >=cur ){
+                BaseArray<T, X> *t_base = tmp->data;
+                return  (*t_base)[index-cur];
+            }
+            cur+=b_size;
+            tmp = tmp->next;
+        }
+
+        return nullptr;
+    }
 };
