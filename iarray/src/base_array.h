@@ -111,6 +111,25 @@ public:
         tmp_index = n - 1;
     }
 
+    void remove(const X &index) {
+        if (index > full_size - 1) return;
+        if (index == full_size - 1) {
+            pop_back();
+            return;
+        }
+        node<T> *t = (node<T> *) *((size_t *) arr + index);
+        if (t) {
+            delete (t);
+        }
+        for (auto i = index + 1; i < n; ++i) {
+            *((size_t *) arr + i - 1) = *((size_t *) arr + i);
+        }
+        --n;
+        *((size_t *) arr + n) = 0;
+        n ? this->tmp_index = n - 1 : this->tmp_index = 0;
+
+    }
+
     node<T> *insert_before(node<T> *t, const X &index) {
         if (index > full_size - 1) std::range_error("out of index");
         if (index == n) {
@@ -135,18 +154,19 @@ public:
         return nullptr;
     }
 
-    bool empty(){
-        if(!n) return true;
+    bool empty() {
+        if (!n) return true;
         return false;
     }
 
-    X get_size(){
+    X get_size() {
         return n;
     }
 
-    X get_full_size(){
+    X get_full_size() {
         return this->full_size;
     }
+
     friend std::ostream &operator<<(std::ostream &out, const BaseArray &baseArray) {
         if (((size_t *) baseArray.arr)[baseArray.tmp_index]) {
             out << ((node<T> **) baseArray.arr)[baseArray.tmp_index]->val;

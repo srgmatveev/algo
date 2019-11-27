@@ -40,7 +40,7 @@ private:
         X b_size = 0;
         while (tmp) {
             b_size = tmp->data->get_size();
-            if (index <= cur + b_size && index >=cur ) {
+            if (index <= cur + b_size && index >= cur) {
                 for (auto i = 0; i < b_size; ++i)
                     if (index == cur + i) {
                         BaseArray<T, X> *t_base = tmp->data;
@@ -97,8 +97,7 @@ public:
                     insertAfter(tmp, *baseArray);
                 }
                 break;
-            }
-            else {
+            } else {
                 cur += tmp_size;
                 if (!tmp->next) {
                     BaseArray<T, X> *baseArray = new BaseArray<T, X>(3);
@@ -162,11 +161,21 @@ public:
         return;
     }
 
-    std::size_t size() const {
-        std::size_t count{0};
+    X size() const {
+        X count{0};
         Node<T, X> *tmp = head;
         while (tmp) {
             ++count;
+            tmp = tmp->next;
+        }
+        return count;
+    }
+
+    X full_size() {
+        X count{0};
+        Node<T, X> *tmp = head;
+        while (tmp) {
+            count += tmp->data->get_size();
             tmp = tmp->next;
         }
         return count;
@@ -194,20 +203,35 @@ public:
         return !this->not_empty();
     }
 
-    node<T>* get(const X& index){
+    node<T> *get(const X &index) {
         Node<T, X> *tmp = head;
         X cur = 0;
         X b_size = 0;
         while (tmp) {
             b_size = tmp->data->get_size();
-            if (index < cur + b_size && index >=cur ){
+            if (index < cur + b_size && index >= cur) {
                 BaseArray<T, X> *t_base = tmp->data;
-                return  (*t_base)[index-cur];
+                return (*t_base)[index - cur];
             }
-            cur+=b_size;
+            cur += b_size;
             tmp = tmp->next;
         }
 
         return nullptr;
+    }
+
+    void remove(const X &index) {
+        Node<T, X> *tmp = head;
+        X cur = 0;
+        X b_size = 0;
+        while (tmp) {
+            b_size = tmp->data->get_size();
+            if (index < cur + b_size && index >= cur) {
+                tmp->data->remove(index - cur);
+                break;
+            }
+            cur += b_size;
+            tmp = tmp->next;
+        }
     }
 };

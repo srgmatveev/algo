@@ -116,3 +116,41 @@ TEST_F(BaseArray_Test, as_pop_element) {
     if(node11) delete(node11);
     if(test_node) delete(test_node);
 }
+
+TEST_F(BaseArray_Test, as_remove_element) {
+    std::string output;
+    node<int> *node1 = new node<int>(11);
+    node<int> *node2 = new node<int>(12);
+    node<int> *node3 = new node<int>(13);
+    node<int> *node4 = new node<int>(14);
+    node<int> *node5 = new node<int>(15);
+    baseArray->push_back(node1);
+    baseArray->push_back(node2);
+    baseArray->push_back(node3);
+    baseArray->push_back(node4);
+    baseArray->push_back(node5);
+
+    for(auto i = 0; i< 5; ++i) {
+        testing::internal::CaptureStdout();
+        std::cout<<(*baseArray)[i];
+        output = testing::internal::GetCapturedStdout();
+        ASSERT_EQ(output, "1" + std::to_string(i+1));
+    }
+
+    ASSERT_EQ(baseArray->get_size(),5);
+    baseArray->remove(2);
+    ASSERT_EQ(baseArray->get_size(),4);
+
+    testing::internal::CaptureStdout();
+    std::cout<<(*baseArray)[2];
+    output = testing::internal::GetCapturedStdout();
+    ASSERT_EQ(output,  "14");
+
+    baseArray->remove(0);
+    ASSERT_EQ(baseArray->get_size(),3);
+    testing::internal::CaptureStdout();
+    std::cout<<(*baseArray)[0];
+    output = testing::internal::GetCapturedStdout();
+    ASSERT_EQ(output,  "12");
+
+}
