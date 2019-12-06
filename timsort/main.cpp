@@ -9,13 +9,12 @@ void print(int* a, size_t n){
 int main() {
     unsigned rand_value = 12334;
     srand(rand_value);
-    int n  = 50;
+    int n  = 50000;
     int a[n];
     for (int i = 0; i<n; i++)
     {
         a[i] = (rand() % 100);
     }
-    std::cout<<get_min_run(n)<<std::endl;
     print(a,n);
     tim_sort<int,size_t >(a,  n);
     print(a,n);
