@@ -54,6 +54,7 @@ private:
 
 
     void erase_p(item<T> *&t, T key) {
+        if(!t) return;
         if (t->key == key)
             merge_r(t, t->l, t->r);
         else

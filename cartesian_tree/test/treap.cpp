@@ -51,6 +51,7 @@ TEST_F(Test_Treap, Treap_insert) {
     treap->insert(7, 10);
     ASSERT_EQ(*treap->get_key(), 7);
     ASSERT_EQ(*treap->get_prior(), 10);
+    treap->erase(10);
     treap->erase(7);
-
+    treap->erase(7);
 }
