@@ -1,63 +1,62 @@
 //
-// Created by sergio on 17.12.2019.
+// https://www.geeksforgeeks.org/red-black-tree-set-3-delete-2/
 //
 #include <iostream>
+#include <queue>
 
 #pragma once
 
 template<typename T>
 class RedBlackTree {
+private:
+    struct Node;
+    Node *root;
 public:
+    // constructor 
+    // initialize root 
+    RedBlackTree() { root = NULL; }
+
     explicit RedBlackTree(const T &negInf) {
-        nullNode = new RedBlackNode;
-        nullNode->left = nullNode->right = nullNode;
-        header = new RedBlackNode{negInf};
-        header->left = header->right = nullNode;
-
+        root = new Node{negInf};
+        root->color = BLACK;
     };
-
-    RedBlackTree(const RedBlackTree &rhs) {
-        nullNode = new RedBlackNode;
-        nullNode->left = nullNode->right = nullNode;
-        header = new RedBlackNode{rhs.header->element};
-        header->left = nullNode;
-        header->right = clone(rhs.header->right);
-    }
-
-    RedBlackTree(RedBlackTree &&rhs);
 
     ~RedBlackTree() {
-        reclaimMemory(header);
-        if (nullNode) delete (nullNode);
-    };
+        makeEmpty();
+    }
+
+    Node *getRoot() { return root; }
+
+    bool isEmpty() const {
+        return !root;
+    }
 
     T *findMin() const {
         if (isEmpty()) return nullptr;
-        RedBlackNode *itr = header;
-        while (itr->left != nullNode) itr = itr->left;
-        return itr->element;
+        Node *itr = root;
+        while (itr->left != nullptr) itr = itr->left;
+        return itr->val;
     }
 
     T *findMax() const {
         if (isEmpty()) return nullptr;
-        RedBlackNode *itr = header;
-        while (itr->right != nullNode) itr = itr->right;
-        return itr->element;
+        Node *itr = root;
+        while (itr->right != nullptr) itr = itr->right;
+        return itr->val;
     }
 
     T *find(const T &x) const {
-        nullNode->element = x;
-        RedBlackNode *curr = header;
-
+        Node *curr = root;
+        if (!curr) return nullptr;
         for (;;) {
-            if (x < *curr->element) curr = curr->left;
-            else if (*curr->element < x) curr = curr->right;
-            else if (curr != nullNode) {
-                nullNode->element = nullptr;
-                return curr->element;
+            if (x < *curr->val) {
+                curr = curr->left;
+                if (!curr) return nullptr;
+            } else if (*curr->val < x) {
+                curr = curr->right;
+                if (!curr) return nullptr;
             } else {
-                nullNode->element = nullptr;
-                return nullptr;
+                return curr->val;
             }
         }
     }
@@ -66,199 +65,524 @@ public:
         return find(x);
     }
 
-    bool isEmpty() const {
-        return header->element;
+    // inserts the given value to tree 
+    void insert(const T &n) {
+        Node *newNode = new Node(n);
+        if (root == NULL) {
+            // when root is null 
+            // simply insert value at root 
+            newNode->color = BLACK;
+            root = newNode;
+        } else {
+            Node *temp = search(n);
+
+            if (*temp->val == n) {
+                // return if value already exists 
+                return;
+            }
+
+            // if value is not found, search returns the node 
+            // where the value is to be inserted 
+
+            // connect new node to correct node 
+            newNode->parent = temp;
+
+            if (n < *temp->val)
+                temp->left = newNode;
+            else
+                temp->right = newNode;
+
+            // fix red red voilaton if exists 
+            fixRedRed(newNode);
+        }
     }
 
+    // utility function that deletes the node with given value 
+    void deleteByVal(const T &n) {
+        if (root == NULL)
+            // Tree is empty 
+            return;
+
+        Node *v = search(n);
+
+        if (*v->val != n) {
+            //std::cout << "No node found to delete with value:" << n << std::endl;
+            return;
+        }
+
+        deleteNode(v);
+    }
     void printTree() const {
-        if (header->element == nullptr)
+        if (!root || !root->val)
             std::cout << "Empty tree" << std::endl;
         else
+            printTree(root);
 
-            printTree(header);
+    }
+    // prints inorder of the tree 
+    void printInOrder() {
+        std::cout << "Inorder: " << std::endl;
+        if (root == NULL)
+            std::cout << "Tree is empty" << std::endl;
+        else
+            inorder(root);
+        std::cout << std::endl;
+    }
 
+    // prints level order of the tree 
+    void printLevelOrder() {
+        std::cout << "Level order: " << std::endl;
+        if (root == NULL)
+            std::cout << "Tree is empty" << std::endl;
+        else
+            levelOrder(root);
+        std::cout << std::endl;
     }
 
     void makeEmpty() {
-        if (header->element) {
-            reclaimMemory(header);
-            header = nullNode;
-        }
-    }
-
-    void insert(const T &x) {
-        current = parent = grand = header;
-        auto tmp = new T(x);
-        nullNode->element = tmp;
-        while (*current->element != x) {
-            great = grand;
-            grand = parent;
-            parent = current;
-            current = x < *current->element ? current->left : current->right;
-
-            // Check if two red children; fix if so
-            if (current->left->color == RED && current->right->color == RED)
-                handleReorient(x);
-        }
-        // Insertion fails if already present
-        if (current != nullNode) {
-            nullNode->element = nullptr;
-            delete tmp;
-            return;
-        }
-        nullNode->element = nullptr;
-        delete tmp;
-        current = new RedBlackNode{x, nullNode, nullNode};
-        // Attach to parent
-        if (x < *parent->element)
-            parent->left = current;
-        else
-            parent->right = current;
-        handleReorient(x);
-
-    }
-
-    void remove(const T &x);
-
-    enum {
-        RED, BLACK
-    };
-
-    RedBlackTree &operator=(const RedBlackTree &rhs) {
-        if (this != &rhs) {
-            makeEmpty();
-            header = clone(rhs.header);
-            if (nullNode) delete nullNode;
-            nullNode = rhs.nullNode;
-        }
-        return *this;
-    }
-
-    RedBlackTree &operator=(RedBlackTree &&rhs) {
-        if (this != &rhs) {
-            makeEmpty();
-            if (nullNode) delete nullNode;
-            header = rhs.header;
-            nullNode = rhs.nullNode;
-            rhs.header = nullptr;
-            rhs.nullNode = nullptr;
-        }
-        return *this;
+        reclaimMemory(root);
     }
 
 private:
-    struct RedBlackNode {
-        T *element;
-        RedBlackNode *left;
-        RedBlackNode *right;
-        int color;
+    enum COLOR {
+        RED, BLACK
+    };
 
-        RedBlackNode()
-                : element{nullptr}, left{nullptr}, right{nullptr}, color{BLACK} {}
+    struct Node {
+        T *val;
+        COLOR color;
+        Node *left, *right, *parent;
 
-        RedBlackNode(const T &theElement,
-                     RedBlackNode *lt = nullptr, RedBlackNode *rt = nullptr,
-                     int c = BLACK)
-                : left{lt}, right{rt}, color{c} {
-            this->element = new T(theElement);
+        Node() = delete;
+
+        Node(const T &val) {
+            parent = left = right = NULL;
+            // Node is created during insertion
+            // Node is red at insertion
+            color = RED;
+            this->val = new T(val);
         }
 
-        RedBlackNode(T &&theElement, RedBlackNode *lt = nullptr,
-                     RedBlackNode *rt = nullptr, int c = BLACK)
-                : element{std::move(theElement)}, left{lt}, right{rt}, color{c} {}
+        ~Node() { if (val) delete val; }
 
-        ~RedBlackNode() {
-            if (element)
-                delete (element);
+        // searches for given value
+        // if found returns the node (used for delete)
+        // else returns the last node while traversing (used in insert)
+        Node *search(const T &n) {
+            Node *temp = root;
+            while (temp != NULL) {
+                if (n < temp->val) {
+                    if (temp->left == NULL)
+                        break;
+                    else
+                        temp = temp->left;
+                } else if (n == temp->val) {
+                    break;
+                } else {
+                    if (temp->right == NULL)
+                        break;
+                    else
+                        temp = temp->right;
+                }
+            }
 
+            return temp;
+        }
+
+        // returns pointer to uncle
+        Node *uncle() {
+            // If no parent or grandparent, then no uncle
+            if (parent == NULL or parent->parent == NULL)
+                return NULL;
+
+            if (parent->isOnLeft())
+                // uncle on right
+                return parent->parent->right;
+            else
+                // uncle on left
+                return parent->parent->left;
+        }
+
+        // check if node is left child of parent
+        bool isOnLeft() { return this == parent->left; }
+
+        // returns pointer to sibling
+        Node *sibling() {
+            // sibling null if no parent
+            if (parent == NULL)
+                return NULL;
+
+            if (isOnLeft())
+                return parent->right;
+
+            return parent->left;
+        }
+
+        // moves node down and moves given node in its place
+        void moveDown(Node *nParent) {
+            if (parent != NULL) {
+                if (isOnLeft()) {
+                    parent->left = nParent;
+                } else {
+                    parent->right = nParent;
+                }
+            }
+            nParent->parent = parent;
+            parent = nParent;
+        }
+
+        bool hasRedChild() {
+            return (left != NULL and left->color == RED) or
+                   (right != NULL and right->color == RED);
         }
     };
 
-    RedBlackNode *header;     // The tree header (contains negInf)
-    RedBlackNode *nullNode;
-    // Used in insert routine and its helpers (logically static)
-    RedBlackNode *current;
-    RedBlackNode *parent;
-    RedBlackNode *grand;
-    RedBlackNode *great;
+// searches for given value
+    // if found returns the node (used for delete)
+    // else returns the last node while traversing (used in insert)
+    Node *search(const T &n) {
+        Node *temp = root;
+        while (temp != NULL) {
+            if (n < *temp->val) {
+                if (temp->left == NULL)
+                    break;
+                else
+                    temp = temp->left;
+            } else if (n == *temp->val) {
+                break;
+            } else {
+                if (temp->right == NULL)
+                    break;
+                else
+                    temp = temp->right;
+            }
+        }
+
+        return temp;
+    }
+
+    // left rotates the given node
+    void leftRotate(Node *x) {
+        // new parent will be node's right child
+        Node *nParent = x->right;
+
+        // update root if current node is root
+        if (x == root)
+            root = nParent;
+
+        x->moveDown(nParent);
+
+        // connect x with new parent's left element
+        x->right = nParent->left;
+        // connect new parent's left element with node
+        // if it is not null
+        if (nParent->left != NULL)
+            nParent->left->parent = x;
+
+        // connect new parent with x
+        nParent->left = x;
+    }
+
+    void rightRotate(Node *x) {
+        // new parent will be node's left child
+        Node *nParent = x->left;
+
+        // update root if current node is root
+        if (x == root)
+            root = nParent;
+
+        x->moveDown(nParent);
+
+        // connect x with new parent's right element
+        x->left = nParent->right;
+        // connect new parent's right element with node
+        // if it is not null
+        if (nParent->right != NULL)
+            nParent->right->parent = x;
+
+        // connect new parent with x
+        nParent->right = x;
+    }
+
+    void swapColors(Node *x1, Node *x2) {
+        COLOR temp;
+        temp = x1->color;
+        x1->color = x2->color;
+        x2->color = temp;
+    }
+
+    void swapValues(Node *u, Node *v) {
+        std::swap(*u->val, *v->val);
+    }
+
+    // fix red red at given node
+    void fixRedRed(Node *x) {
+        // if x is root color it black and return
+        if (x == root) {
+            x->color = BLACK;
+            return;
+        }
+
+        // initialize parent, grandparent, uncle
+        Node *parent = x->parent, *grandparent = parent->parent,
+                *uncle = x->uncle();
+
+        if (parent->color != BLACK) {
+            if (uncle != NULL && uncle->color == RED) {
+                // uncle red, perform recoloring and recurse
+                parent->color = BLACK;
+                uncle->color = BLACK;
+                grandparent->color = RED;
+                fixRedRed(grandparent);
+            } else {
+                // Else perform LR, LL, RL, RR
+                if (parent->isOnLeft()) {
+                    if (x->isOnLeft()) {
+                        // for left right
+                        swapColors(parent, grandparent);
+                    } else {
+                        leftRotate(parent);
+                        swapColors(x, grandparent);
+                    }
+                    // for left left and left right
+                    rightRotate(grandparent);
+                } else {
+                    if (x->isOnLeft()) {
+                        // for right left
+                        rightRotate(parent);
+                        swapColors(x, grandparent);
+                    } else {
+                        swapColors(parent, grandparent);
+                    }
+
+                    // for right right and right left
+                    leftRotate(grandparent);
+                }
+            }
+        }
+    }
+
+    // find node that do not have a left child
+    // in the subtree of the given node
+    Node *successor(Node *x) {
+        Node *temp = x;
+
+        while (temp->left != NULL)
+            temp = temp->left;
+
+        return temp;
+    }
+
+    // find node that replaces a deleted node in BST
+    Node *BSTreplace(Node *x) {
+        // when node have 2 children
+        if (x->left != NULL and x->right != NULL)
+            return successor(x->right);
+
+        // when leaf
+        if (x->left == NULL and x->right == NULL)
+            return NULL;
+
+        // when single child
+        if (x->left != NULL)
+            return x->left;
+        else
+            return x->right;
+    }
+
+    // deletes the given node
+    void deleteNode(Node *v) {
+        Node *u = BSTreplace(v);
+
+        // True when u and v are both black
+        bool uvBlack = ((u == NULL or u->color == BLACK) and (v->color == BLACK));
+        Node *parent = v->parent;
+
+        if (u == nullptr) {
+            // u is NULL therefore v is leaf
+            if (v == root) {
+                // v is root, making root null
+                root = NULL;
+            } else {
+                if (uvBlack) {
+                    // u and v both black
+                    // v is leaf, fix double black at v
+                    fixDoubleBlack(v);
+                } else {
+                    // u or v is red
+                    if (v->sibling() != NULL)
+                        // sibling is not null, make it red"
+                        v->sibling()->color = RED;
+                }
+
+                // delete v from the tree
+                if (v->isOnLeft()) {
+                    parent->left = NULL;
+                } else {
+                    parent->right = NULL;
+                }
+            }
+            delete v;
+            return;
+        }
+
+        if (v->left == NULL or v->right == NULL) {
+            // v has 1 child
+            if (v == root) {
+                // v is root, assign the value of u to v, and delete u
+                *v->val = *u->val;
+                v->left = v->right = NULL;
+                delete u;
+            } else {
+                // Detach v from tree and move u up
+                if (v->isOnLeft()) {
+                    parent->left = u;
+                } else {
+                    parent->right = u;
+                }
+                delete v;
+                u->parent = parent;
+                if (uvBlack) {
+                    // u and v both black, fix double black at u
+                    fixDoubleBlack(u);
+                } else {
+                    // u or v red, color u black
+                    u->color = BLACK;
+                }
+            }
+            return;
+        }
+
+        // v has 2 children, swap values with successor and recurse
+        swapValues(u, v);
+        deleteNode(u);
+    }
+
+    void fixDoubleBlack(Node *x) {
+        if (x == root)
+            // Reached root
+            return;
+
+        Node *sibling = x->sibling(), *parent = x->parent;
+        if (sibling == NULL) {
+            // No sibiling, double black pushed up
+            fixDoubleBlack(parent);
+        } else {
+            if (sibling->color == RED) {
+                // Sibling red
+                parent->color = RED;
+                sibling->color = BLACK;
+                if (sibling->isOnLeft()) {
+                    // left case
+                    rightRotate(parent);
+                } else {
+                    // right case
+                    leftRotate(parent);
+                }
+                fixDoubleBlack(x);
+            } else {
+                // Sibling black
+                if (sibling->hasRedChild()) {
+                    // at least 1 red children
+                    if (sibling->left != NULL and sibling->left->color == RED) {
+                        if (sibling->isOnLeft()) {
+                            // left left
+                            sibling->left->color = sibling->color;
+                            sibling->color = parent->color;
+                            rightRotate(parent);
+                        } else {
+                            // right left
+                            sibling->left->color = parent->color;
+                            rightRotate(sibling);
+                            leftRotate(parent);
+                        }
+                    } else {
+                        if (sibling->isOnLeft()) {
+                            // left right
+                            sibling->right->color = parent->color;
+                            leftRotate(sibling);
+                            rightRotate(parent);
+                        } else {
+                            // right right
+                            sibling->right->color = sibling->color;
+                            sibling->color = parent->color;
+                            leftRotate(parent);
+                        }
+                    }
+                    parent->color = BLACK;
+                } else {
+                    // 2 black children
+                    sibling->color = RED;
+                    if (parent->color == BLACK)
+                        fixDoubleBlack(parent);
+                    else
+                        parent->color = BLACK;
+                }
+            }
+        }
+    }
+
+    // prints level order for given node
+    void levelOrder(Node *x) {
+        if (x == NULL)
+            // return if node is null
+            return;
+
+        // queue for level order
+        std::queue<Node *> q;
+        Node *curr;
+
+        // push x
+        q.push(x);
+
+        while (!q.empty()) {
+            // while q is not empty
+            // dequeue
+            curr = q.front();
+            q.pop();
+
+            // print node value
+            std::cout << *curr->val << " ";
+
+            // push children to queue
+            if (curr->left != NULL)
+                q.push(curr->left);
+            if (curr->right != NULL)
+                q.push(curr->right);
+        }
+    }
+
+    // prints inorder recursively
+    void inorder(Node *x) {
+        if (x == NULL)
+            return;
+        inorder(x->left);
+        if (x->color == BLACK)
+            std::cout << "(" << *x->val << ")" << " ";
+        else
+            std::cout << "((" << *x->val << "))" << " ";
+        inorder(x->right);
+    }
 
     // Usual recursive stuff
-    void reclaimMemory(RedBlackNode *t) {
-        if (t->element) {
+    void reclaimMemory(Node *t) {
+        if (t) {
             reclaimMemory(t->left);
             reclaimMemory(t->right);
             delete t;
         }
     }
 
-    void printTree(RedBlackNode *t) const {
-        if (t->element) {
+    void printTree(Node *t) const {
+        if (t and t->val) {
             if (t->color == BLACK)
-                std::cout << "(" << *t->element << ")" << std::endl;
+                std::cout << "(" << *t->val << ")" << std::endl;
             else
-                std::cout << "((" << *t->element << "))" << std::endl;
+                std::cout << "((" << *t->val << "))" << std::endl;
             printTree(t->left);
             printTree(t->right);
         } else {
             std::cout << "(" << "nil" << ")" << std::endl;
         }
-    }
-
-
-    RedBlackNode *clone(RedBlackNode *t) const {
-        if (t == t->left) // Cannot test against nullNode!!!
-            return nullNode;
-        else
-            return new RedBlackNode{t->element, clone(t->left),
-                                    clone(t->right), t->color};
-
-    };
-
-    // Red-black tree manipulations
-    void handleReorient(const T &item) {
-        // Do the color flip
-        current->color = RED;
-        current->left->color = BLACK;
-        current->right->color = BLACK;
-        if (parent->color == RED)
-            // Have to rotate
-        {
-            grand->color = RED;
-            if (item < *grand->element != item < *parent->element)
-                parent = rotate(item, grand); // Start dbl rotate
-            current = rotate(item, great);
-            current->color = BLACK;
-        }
-        header->color = BLACK; // Make root black
-
-    }
-
-    RedBlackNode *rotate(const T &item, RedBlackNode *theParent) {
-        if (item < *theParent->element) {
-            item < *theParent->left->element ?
-            rotateWithLeftChild(theParent->left) : // LL
-            rotateWithRightChild(theParent->left); // LR
-            return theParent->left;
-        } else {
-            item < *theParent->right->element ?
-            rotateWithLeftChild(theParent->right) : // RL
-            rotateWithRightChild(theParent->right); // RR
-            return theParent->right;
-        }
-
-    }
-
-    void rotateWithLeftChild(RedBlackNode *&k2) {
-        RedBlackNode *k1 = k2->left;
-        k2->left = k1->right;
-        k1->right = k2;
-        k2 = k1;
-    }
-
-    void rotateWithRightChild(RedBlackNode *&k1) {
-        RedBlackNode *k2 = k1->right;
-        k1->right = k2->left;
-        k2->left = k1;
-        k1 = k2;
     }
 };
